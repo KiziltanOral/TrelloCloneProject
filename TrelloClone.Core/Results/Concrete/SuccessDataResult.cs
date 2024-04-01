@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TrelloClone.Core.Results.Interfaces;
+
+namespace TrelloClone.Core.Results.Concrete
+{
+    public class SuccessDataResult<T> : DataResult<T>, IDataResult<T> where T : class
+    {
+        public SuccessDataResult() : base(default, true)
+        { }
+
+        public SuccessDataResult(string message) : base(default, true, message)
+        { }
+
+        public SuccessDataResult(T data, string message) : base(data, true, message)
+        { }
+    }
+}
