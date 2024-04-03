@@ -13,7 +13,7 @@ namespace TrelloClone.Business.Interfaces
         Task<IDataResult<ListDetailsDto>> CreateListAsync(ListCreateDto listCreateDto);
         Task<IResult> UpdateListAsync(ListUpdateDto listUpdateDto);
         Task<IResult> DeleteListAsync(Guid id);
-        Task<IDataResult<IEnumerable<ListDetailsDto>>> GetAllListsAsync();
+        Task<IEnumerable<ListDetailsDto>> GetAllListsAsync();
         Task<IDataResult<ListDetailsDto>> GetListByIdAsync(Guid id);
     }
 

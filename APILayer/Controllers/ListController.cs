@@ -56,10 +56,6 @@ namespace APILayer.Controllers
         public async Task<IActionResult> GetAllLists()
         {
             var result = await _listService.GetAllListsAsync();
-            if (!result.IsSuccess)
-            {
-                return BadRequest(result.Message);
-            }
             return Ok(result);
         }
     }

@@ -20,7 +20,7 @@ namespace APILayer.JwtService
 
         public string Authenticate(string username, string password)
         {
-            if (username == "admin" && password == "12345")
+            if (username == "admin@gmail.com" && password == "12345")
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.ASCII.GetBytes(_secretKey);

@@ -1,7 +1,173 @@
-﻿
+﻿@model IEnumerable<ListDetailsVM>
 
 <head>
-    <title>Home Page</title>
+    <title></title>
 </head>
+<style>
+    .list-container {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 20px;
+        vertical-align: top;
+        width: 200px;
+        min-height: 300px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        word-wrap: break-word;
+        background-color: cornflowerblue;
+    }
 
-<h1>HOME INDEX</h1>
+    .list-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .add-card-input {
+        margin-top: 10px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-sizing: border-box;
+        width: calc(100% - 16px); /* Input genişliği, padding'i hesaba katarak ayarlandı */
+    }
+
+        .add-card-input::placeholder {
+            color: #999;
+        }
+
+    p {
+        background-color: #fff;
+        padding: 5px;
+        margin-top: 10px;
+        border-radius: 3px;
+        box-shadow: 0 1px 0 rgba(9,30,66,.25);
+    }
+</style>
+
+
+<div class="content" id="content">
+    @foreach (var list in Model)
+    {
+        <div draggable="true" class="list-container" id="@list.Id">
+            <h3 draggable="false">@list.Name</h3>
+            <div draggable="true" class="list-details">
+                @if (list.Cards != null)
+                {
+                    foreach (var card in list.Cards)
+                    {
+                        <p draggable="true">@card.Title</p>
+                    }
+                }
+                <input type="text" class="add-card-input" data-list-id="@list.Id" placeholder="Add a card..." />
+            </div>
+        </div>
+    }
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var draggedElement = null;
+
+        document.addEventListener('dragstart', function (event) {
+            draggedElement = event.target;
+            event.dataTransfer.effectAllowed = 'move';
+        });
+
+        document.addEventListener('dragover', function (event) {
+            event.preventDefault();
+            if (event.target.classList.contains('list-container') || event.target.classList.contains('list-details')) {
+                event.target.style.outline = "2px dashed red";
+            }
+        });
+
+        document.addEventListener('dragleave', function (event) {
+            if (event.target.classList.contains('list-container') || event.target.classList.contains('list-details')) {
+                event.target.style.outline = "";
+            }
+        });
+
+        document.addEventListener('drop', function (event) {
+            event.preventDefault();
+            if (draggedElement) {
+                if (event.target.classList.contains('list-container') && draggedElement.tagName === 'DIV') {
+                    let draggedIndex = Array.from(draggedElement.parentNode.children).indexOf(draggedElement);
+                    let targetIndex = Array.from(event.target.parentNode.children).indexOf(event.target);
+                    if (draggedIndex < targetIndex) {
+                        event.target.parentNode.insertBefore(draggedElement, event.target.nextSibling);
+                    } else {
+                        event.target.parentNode.insertBefore(draggedElement, event.target);
+                    }
+                    event.target.style.outline = "";
+                } else if (event.target.classList.contains('list-details') && draggedElement.tagName === 'P') {
+                    event.target.insertBefore(draggedElement, event.target.firstChild);
+                    event.target.style.outline = "";
+                }
+            }
+        });
+
+        function fetchLists() {
+            $.ajax({
+                url: 'https://localhost:7195/api/List',
+                type: 'GET',
+                success: function (lists) {
+                    $('#content').empty();
+                    lists.forEach(function (list) {
+                        // Ensure each list container is properly created and appended
+                        var listHtml = `<div class="list-container" draggable="true" id="list-${list.id}">
+                                        <h3>${list.name}</h3>
+                                        <div class="list-details" data-list-id="${list.id}">
+                                            ${list.cards.map(card => `<p draggable="true">${card.title}</p>`).join('')}
+                                        </div>
+                                        <input type="text" class="add-card-input" data-list-id="${list.id}" placeholder="Add a card..."/>
+                                    </div>`;
+                        $('#content').append(listHtml);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Listeler çekilirken bir hata oluştu: ", error);
+                }
+            });
+        }
+
+        // Updated addCardToList function to ensure it triggers fetchLists upon successful card addition
+        function addCardToList(cardName, listId) {
+            if (!cardName) return;
+
+            var data = { title: cardName, listId: listId };
+            $.ajax({
+                url: 'https://localhost:7195/api/Card',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    // Yeni kartı DOM'a ekleyin
+                    var cardHtml = '<p draggable="true">' + cardName + '</p>';
+                    $('.list-details[data-list-id="' + listId + '"]').append(cardHtml);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Kart eklerken bir hata oluştu: ", error);
+                }
+            });
+        }
+
+
+        // Handling card addition through blur and keypress events
+        $('#content').on('blur', '.add-card-input', function () {
+            var cardName = $(this).val().trim();
+            var listId = $(this).data('list-id');
+            addCardToList(cardName, listId);
+            $(this).val(''); // Clear input after adding
+        }).on('keypress', '.add-card-input', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                $(this).blur(); // Trigger blur to add card
+            }
+        });
+
+        fetchLists(); // Initial call to load lists and cards
+    });
+
+</script>

@@ -14,11 +14,11 @@ namespace TrelloClone.Business.Extensions
     {
         public static IServiceCollection AddBusinessServices(this IServiceCollection services)
         {
-            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 
             services.AddScoped<ICardService, CardService>();
             services.AddScoped<IListService, ListService>();
-            services.AddScoped<IBoardService, BoardService>();
 
             return services;
         }

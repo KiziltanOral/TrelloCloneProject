@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +13,9 @@ namespace TrelloClone.DataAccess.EFCore.Repositories
 {
     public class ListRepository : EFBaseRepository<List>, IListRepository
     {
+
         public ListRepository(TrelloCloneDbContext context) : base(context)
-        {            
+        {
         }
     }
 }

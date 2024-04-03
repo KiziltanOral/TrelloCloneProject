@@ -25,4 +25,8 @@
     <ProjectReference Include="..\TrelloClone.DataAccess.EFCore\TrelloClone.DataAccess.EFCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\CardVMs\" />
+  </ItemGroup>
+
 </Project>

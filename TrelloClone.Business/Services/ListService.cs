@@ -52,11 +52,10 @@ namespace TrelloClone.Business.Services
             return new SuccessResult("List successfully deleted.");
         }
 
-        public async Task<IDataResult<IEnumerable<ListDetailsDto>>> GetAllListsAsync()
+        public async Task<IEnumerable<ListDetailsDto>> GetAllListsAsync()
         {
             var lists = await _listRepository.GetAllAsync();
-            var listDetailsDtos = _mapper.Map<IEnumerable<ListDetailsDto>>(lists);
-            return new SuccessDataResult<IEnumerable<ListDetailsDto>>(listDetailsDtos, "Lists successfully retrieved.");
+            return _mapper.Map<IEnumerable<ListDetailsDto>>(lists);
         }
 
         public async Task<IDataResult<ListDetailsDto>> GetListByIdAsync(Guid id)

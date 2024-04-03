@@ -11,7 +11,6 @@ namespace TrelloClone.DataAccess.EFCore.Extensions
         {
             services.AddScoped<IListRepository, ListRepository>();
             services.AddScoped<ICardRepository, CardRepository>();
-            services.AddScoped<IBoardRepository, BoardRepository>();
             
 
             return services;

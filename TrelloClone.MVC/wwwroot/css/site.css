@@ -18,5 +18,84 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ECECEC;
 }
+.render-body-container {
+    margin-left: 220px;
+    margin-top : 20px;
+}
+
+.navbar {
+    background-color: #333333;
+    color: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    align-items: center;
+    height: 100px;
+}
+
+    .navbar .logo {
+        color: #FFFFFF;
+        text-decoration: none;
+        height: 40px;
+        width: 200px;
+    }
+
+    .navbar .user {
+        color: #FFFFFF;
+    }
+
+.sidebar {
+    background-color: #333333;
+    color: #FFFFFF;
+    width: 200px;
+    position: fixed;
+    left: 0;
+    top: 100px;
+    bottom: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+    .sidebar .my-boards {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+        .sidebar .my-boards a {
+            color: #FFFFFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+    .sidebar .add-board {
+        font-size: 24px;
+        cursor: pointer;
+    }
+/*
+.content {
+    margin-left: 200px;
+    padding: 20px;
+}*/
+
+.board-item {
+    background-color: #FFFFFF;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }

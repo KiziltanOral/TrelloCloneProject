@@ -9,7 +9,6 @@ namespace TrelloClone.Dtos.CardDtos
     public class CardCreateDto
     {
         public string Title { get; set; }
-        public string Description { get; set; }
         public Guid ListId { get; set; }
     }
 }
