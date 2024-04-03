@@ -29,7 +29,7 @@
         border: 1px solid #ccc;
         border-radius: 3px;
         box-sizing: border-box;
-        width: calc(100% - 16px); /* Input genişliği, padding'i hesaba katarak ayarlandı */
+        width: calc(100% - 16px); 
     }
 
         .add-card-input::placeholder {
@@ -115,7 +115,6 @@
                 success: function (lists) {
                     $('#content').empty();
                     lists.forEach(function (list) {
-                        // Ensure each list container is properly created and appended
                         var listHtml = `<div class="list-container" draggable="true" id="list-${list.id}">
                                         <h3>${list.name}</h3>
                                         <div class="list-details" data-list-id="${list.id}">
@@ -132,9 +131,8 @@
             });
         }
 
-        // Updated addCardToList function to ensure it triggers fetchLists upon successful card addition
         function addCardToList(cardName, listId) {
-            if (!cardName) return;
+            if (!cardName || !listId) return;
 
             var data = { title: cardName, listId: listId };
             $.ajax({
@@ -143,7 +141,6 @@
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 success: function (response) {
-                    // Yeni kartı DOM'a ekleyin
                     var cardHtml = '<p draggable="true">' + cardName + '</p>';
                     $('.list-details[data-list-id="' + listId + '"]').append(cardHtml);
                 },
@@ -153,21 +150,18 @@
             });
         }
 
-
-        // Handling card addition through blur and keypress events
         $('#content').on('blur', '.add-card-input', function () {
             var cardName = $(this).val().trim();
             var listId = $(this).data('list-id');
             addCardToList(cardName, listId);
-            $(this).val(''); // Clear input after adding
+            $(this).val(''); 
         }).on('keypress', '.add-card-input', function (e) {
             if (e.which === 13) {
                 e.preventDefault();
-                $(this).blur(); // Trigger blur to add card
+                $(this).blur(); 
             }
         });
 
-        fetchLists(); // Initial call to load lists and cards
+        fetchLists();
     });
-
 </script>

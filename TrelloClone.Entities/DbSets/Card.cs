@@ -10,6 +10,7 @@ namespace TrelloClone.Entities.DbSets
     public class Card : BaseEntity
     {
         public string Title { get; set; }
+        public int OrderIndex { get; set; }
         public Guid ListId { get; set; }
         public List List { get; set; }
     }
