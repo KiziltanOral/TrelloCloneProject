@@ -1,127 +1,187 @@
 ﻿@model IEnumerable<ListDetailsVM>
 
-<head>
-    <title></title>
-</head>
-<style>
-    .list-container {
-        display: inline-block;
-        margin-right: 20px;
-        margin-bottom: 20px;
-        vertical-align: top;
-        width: 200px;
-        min-height: 300px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        word-wrap: break-word;
-        background-color: cornflowerblue;
-    }
+<link href="~/css/index.css" rel="stylesheet" />
 
-    .list-details {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .add-card-input {
-        margin-top: 10px;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        box-sizing: border-box;
-        width: calc(100% - 16px); 
-    }
-
-        .add-card-input::placeholder {
-            color: #999;
-        }
-
-    p {
-        background-color: #fff;
-        padding: 5px;
-        margin-top: 10px;
-        border-radius: 3px;
-        box-shadow: 0 1px 0 rgba(9,30,66,.25);
-    }
-</style>
-
-
-<div class="content" id="content">
+<div id="board">
     @foreach (var list in Model)
     {
-        <div draggable="true" class="list-container" id="@list.Id">
-            <h3 draggable="false">@list.Name</h3>
-            <div draggable="true" class="list-details">
+        <div class="list" id="list-@list.Id" data-list-id="@list.Id">
+            <div class="list-header">@list.Name</div>
+            <div class="cards">
                 @if (list.Cards != null)
                 {
                     foreach (var card in list.Cards)
                     {
-                        <p draggable="true">@card.Title</p>
+                        <div class="card" draggable="true" id="card-@card.Id" data-card-id="@card.Id">
+                            <div class="card-content">
+                                <span class="card-title">@card.Title</span>
+                                <button class="delete-card-btn" data-card-id="@card.Id">X</button>
+                            </div>
+                        </div>
                     }
                 }
-                <input type="text" class="add-card-input" data-list-id="@list.Id" placeholder="Add a card..." />
             </div>
+            <input type="text" class="add-card-input" placeholder="Add a card..." data-list-id="@list.Id" />
         </div>
     }
 </div>
+
+
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
         var draggedElement = null;
+        var draggedListId = null;
 
         document.addEventListener('dragstart', function (event) {
             draggedElement = event.target;
-            event.dataTransfer.effectAllowed = 'move';
+            draggedListId = $(draggedElement).closest('.list').data('list-id');
+            draggedCardId = $(draggedElement).data('card-id');
+            event.dataTransfer.setData("text/plain", null);
         });
 
         document.addEventListener('dragover', function (event) {
             event.preventDefault();
-            if (event.target.classList.contains('list-container') || event.target.classList.contains('list-details')) {
-                event.target.style.outline = "2px dashed red";
-            }
-        });
-
-        document.addEventListener('dragleave', function (event) {
-            if (event.target.classList.contains('list-container') || event.target.classList.contains('list-details')) {
-                event.target.style.outline = "";
-            }
         });
 
         document.addEventListener('drop', function (event) {
             event.preventDefault();
-            if (draggedElement) {
-                if (event.target.classList.contains('list-container') && draggedElement.tagName === 'DIV') {
-                    let draggedIndex = Array.from(draggedElement.parentNode.children).indexOf(draggedElement);
-                    let targetIndex = Array.from(event.target.parentNode.children).indexOf(event.target);
-                    if (draggedIndex < targetIndex) {
-                        event.target.parentNode.insertBefore(draggedElement, event.target.nextSibling);
-                    } else {
-                        event.target.parentNode.insertBefore(draggedElement, event.target);
-                    }
-                    event.target.style.outline = "";
-                } else if (event.target.classList.contains('list-details') && draggedElement.tagName === 'P') {
-                    event.target.insertBefore(draggedElement, event.target.firstChild);
-                    event.target.style.outline = "";
-                }
+            if (!draggedElement) return;
+
+            let targetList = $(event.target).closest('.list');
+            let targetListId = targetList.data('list-id');
+            let cardId = $(draggedElement).data('card-id');
+
+            let cardsInTargetList = targetList.find('.cards .card');
+            let targetIndex = Array.from(cardsInTargetList).indexOf(draggedElement);
+
+            if (targetListId === draggedListId) {
+                moveCardWithinList(cardId, targetIndex);
+            } else {
+                moveCardToAnotherList(cardId, targetListId, targetIndex);
             }
         });
+
+        $('.cards').on('dragstart', '.card', function (e) {
+            draggedElement = this;
+            $(draggedElement).addClass('dragging');
+        });
+
+        $('.cards').on('dragover', function (e) {
+            e.preventDefault();
+            var afterElement = getDragAfterElement($(this), e.clientY);
+            if (afterElement == undefined) {
+                $(this).append(draggedElement);
+            } else {
+                $(afterElement).before(draggedElement);
+            }
+        });
+
+        $('.cards').on('dragend', '.card', function () {
+            $(draggedElement).removeClass('dragging');
+        });
+
+        $('#board').on('click', '.delete-card-btn', function () {
+            var cardId = $(this).data('card-id');
+            if (confirm('Are you sure you want to delete this card?')) {
+                $.ajax({
+                    url: `https://localhost:7195/api/Card/${cardId}`,
+                    type: 'DELETE',
+                    success: function (result) {
+                        $(`#card-${cardId}`).remove();
+                        alert('Card successfully deleted.');
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error deleting card: ", error);
+                        alert('Error deleting card.');
+                    }
+                });
+            }
+        });
+
+        function getDragAfterElement(container, y) {
+            var draggableElements = [...container.find('.card:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                var box = child.getBoundingClientRect();
+                var offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function moveCardWithinList(cardId, targetIndex) {
+            console.log(`Kart ${cardId}, aynı listeye, ${targetIndex} pozisyonuna taşınıyor.`);
+            $.ajax({
+                url: `https://localhost:7195/api/Card/${cardId}/MoveWithinList/${targetIndex}`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({}),
+                success: function (response) {
+                    console.log("Kart başarıyla taşındı.");
+                    updateDOMAfterMove();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Kart taşınırken bir hata oluştu: ", error);
+                }
+            });
+        }
+
+        function moveCardToAnotherList(cardId, targetListId, targetIndex) {
+            console.log(`Kart ${cardId}, ${targetListId} listesine, ${targetIndex} pozisyonuna taşınıyor.`);
+            $.ajax({
+                url: `https://localhost:7195/api/Card/${cardId}/MoveToAnotherList/${targetListId}/${targetIndex}`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({}),
+                success: function () {
+                    console.log("Kart başka bir listeye başarıyla taşındı.");
+                    updateDOMAfterMove();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Kart taşınırken bir hata oluştu: ", error);
+                }
+            });
+        }
+
+        function updateDOMAfterMove(cardId, targetListId, targetIndex) {
+            var cardElement = $(`#card-${cardId}`);
+            var targetListCardsContainer = $(`#list-${targetListId} .cards`);
+            if (targetIndex >= targetListCardsContainer.children().length) {
+                targetListCardsContainer.append(cardElement);
+            } else {
+                var beforeCard = targetListCardsContainer.children().eq(targetIndex);
+                beforeCard.before(cardElement);
+            }
+        }
+
 
         function fetchLists() {
             $.ajax({
                 url: 'https://localhost:7195/api/List',
                 type: 'GET',
-                success: function (lists) {
+                success: function (response) {
                     $('#content').empty();
-                    lists.forEach(function (list) {
+                    response.data.forEach(function (list) {
                         var listHtml = `<div class="list-container" draggable="true" id="list-${list.id}">
-                                        <h3>${list.name}</h3>
-                                        <div class="list-details" data-list-id="${list.id}">
-                                            ${list.cards.map(card => `<p draggable="true">${card.title}</p>`).join('')}
-                                        </div>
-                                        <input type="text" class="add-card-input" data-list-id="${list.id}" placeholder="Add a card..."/>
-                                    </div>`;
+                                    <h3>${list.name}</h3>
+                                    <div class="list-details" data-list-id="${list.id}">`;
+                        list.cards.forEach(function (card) {
+                            listHtml += `<div class="card" draggable="true" id="card-${card.id}" data-card-id="${card.id}">
+                                    <div class="card-content">
+                                        <span class="card-title">${card.title}</span>
+                                        <button class="delete-card-btn" data-card-id="${card.id}">X</button>
+                                    </div>
+                                 </div>`;
+                        });
+                        listHtml += `</div>
+                             <input type="text" class="add-card-input" data-list-id="${list.id}" placeholder="Add a card..."/>
+                            </div>`;
                         $('#content').append(listHtml);
                     });
                 },
@@ -131,36 +191,47 @@
             });
         }
 
-        function addCardToList(cardName, listId) {
-            if (!cardName || !listId) return;
 
-            var data = { title: cardName, listId: listId };
+        $('#board').on('keypress', '.add-card-input', function (e) {
+            if (e.which == 13) {
+                e.preventDefault();
+                var cardName = $(this).val().trim();
+                var listId = $(this).closest('.list').attr('id').replace('list-', '');
+                if (cardName) {
+                    addCardToList(cardName, listId);
+                    $(this).val('');
+                }
+            }
+        }).on('blur', '.add-card-input', function () {
+            var cardName = $(this).val().trim();
+            var listId = $(this).closest('.list').attr('id').replace('list-', '');
+            if (cardName) {
+                addCardToList(cardName, listId);
+                $(this).val('');
+            }
+        });
+
+        function addCardToList(cardName, listId) {
             $.ajax({
                 url: 'https://localhost:7195/api/Card',
-                type: 'POST',
+                method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(data),
+                data: JSON.stringify({ title: cardName, listId: listId }),
                 success: function (response) {
-                    var cardHtml = '<p draggable="true">' + cardName + '</p>';
-                    $('.list-details[data-list-id="' + listId + '"]').append(cardHtml);
+                    var newCardHtml = `<div class="card" draggable="true" id="card-${response.id}" data-card-id="${response.id}">
+                                    <div class="card-content">
+                                        <span class="card-title">${response.title}</span>
+                                        <button class="delete-card-btn" data-card-id="${response.id}">X</button>
+                                    </div>
+                                </div>`;
+                    $(`#list-${listId} .cards`).append(newCardHtml);
                 },
                 error: function (xhr, status, error) {
-                    console.error("Kart eklerken bir hata oluştu: ", error);
+                    alert("An error occurred: " + error);
                 }
             });
         }
 
-        $('#content').on('blur', '.add-card-input', function () {
-            var cardName = $(this).val().trim();
-            var listId = $(this).data('list-id');
-            addCardToList(cardName, listId);
-            $(this).val(''); 
-        }).on('keypress', '.add-card-input', function (e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                $(this).blur(); 
-            }
-        });
 
         fetchLists();
     });

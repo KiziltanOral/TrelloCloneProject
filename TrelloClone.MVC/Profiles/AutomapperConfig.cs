@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using TrelloClone.Dtos.CardDtos;
 using TrelloClone.Dtos.ListDtos;
+using TrelloClone.MVC.Models.CardVMs;
 using TrelloClone.MVC.Models.ListVMs;
 
 namespace TrelloClone.MVC.Profiles
@@ -8,8 +10,8 @@ namespace TrelloClone.MVC.Profiles
     {
         public AutomapperConfig()
         {
-            CreateMap<ListUpdateVM, ListUpdateDto>().ReverseMap();
-            CreateMap<ListDetailsDto, ListDetailsVM>().ReverseMap();
+            CreateMap<ListDto, ListDetailsVM>();
+            CreateMap<CardDto, CardDetailsVM>();
         }
     }
 }

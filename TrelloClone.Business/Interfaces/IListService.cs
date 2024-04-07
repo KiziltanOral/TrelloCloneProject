@@ -10,11 +10,11 @@ namespace TrelloClone.Business.Interfaces
 {
     public interface IListService
     {
-        Task<IDataResult<ListDetailsDto>> CreateListAsync(ListCreateDto listCreateDto);
-        Task<IResult> UpdateListAsync(ListUpdateDto listUpdateDto);
-        Task<IResult> DeleteListAsync(Guid id);
-        Task<IEnumerable<ListDetailsDto>> GetAllListsAsync();
-        Task<IDataResult<ListDetailsDto>> GetListByIdAsync(Guid id);
+        Task<IDataResult<ListDto>> GetListByIdAsync(Guid listId);
+        Task<IDataResult<List<ListDto>>> GetAllListsAsync();
+        Task<IDataResult<ListDto>> CreateListAsync(ListCreateDto createListDto);
+        Task<IResult> UpdateListAsync(ListUpdateDto updateListDto);
+        Task<IResult> DeleteListAsync(Guid listId);
     }
 
 }

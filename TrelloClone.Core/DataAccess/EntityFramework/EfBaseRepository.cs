@@ -70,6 +70,34 @@ namespace TrelloClone.Core.DataAccess.EntityFramework
             return orderDesc ? await values.OrderByDescending(orderby).ToListAsync() : await values.OrderBy(orderby).ToListAsync();
         }
 
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, string includeProperties = "", bool tracking = true)
+        {
+            IQueryable<TEntity> query = _table.AsQueryable();
+
+            if (!tracking)
+            {
+                query = query.AsNoTracking();
+            }
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            if (orderBy != null)
+            {
+                return await orderBy(query).ToListAsync();
+            }
+            else
+            {
+                return await query.ToListAsync();
+            }
+        }
+
         public Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression, bool tracking = true)
         {
             return GetAllActives(tracking).FirstOrDefaultAsync(expression);

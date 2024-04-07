@@ -12,61 +12,73 @@ namespace TrelloClone.Business.Services
     {
         private readonly IListRepository _listRepository;
         private readonly IMapper _mapper;
+        private readonly ICardOrdersRepository _cardOrdersRepository;
+        private readonly ICardRepository _cardRepository;
 
-        public ListService(IListRepository listRepository, IMapper mapper)
+        public ListService(IListRepository listRepository, IMapper mapper, ICardOrdersRepository cardOrdersRepository, ICardRepository cardRepository)
         {
             _listRepository = listRepository;
             _mapper = mapper;
+            _cardOrdersRepository = cardOrdersRepository;
+            _cardRepository = cardRepository;
         }
 
-        public async Task<IDataResult<ListDetailsDto>> CreateListAsync(ListCreateDto listCreateDto)
+        public async Task<IDataResult<ListDto>> CreateListAsync(ListCreateDto createListDto)
         {
-            var listEntity = _mapper.Map<List>(listCreateDto);
-            await _listRepository.AddAsync(listEntity);
-            await _listRepository.SaveChangesAsync();
-            var listDetailsDto = _mapper.Map<ListDetailsDto>(listEntity);
-            return new SuccessDataResult<ListDetailsDto>(listDetailsDto, "List successfully created.");
+            var list = _mapper.Map<List>(createListDto);
+            var entity = await _listRepository.AddAsync(list);
+
+            var listDto = _mapper.Map<ListDto>(entity);
+            return new SuccessDataResult<ListDto>(listDto, "List successfully created.");
         }
 
-        public async Task<IResult> UpdateListAsync(ListUpdateDto listUpdateDto)
+        public async Task<IResult> UpdateListAsync(ListUpdateDto updateListDto)
         {
-            var listEntity = await _listRepository.GetByIdAsync(listUpdateDto.Id);
-            if (listEntity == null)
+            var list = await _listRepository.GetByIdAsync(updateListDto.Id);
+            if (list == null)
             {
                 return new ErrorResult("List not found.");
             }
-            _mapper.Map(listUpdateDto, listEntity);
-            await _listRepository.SaveChangesAsync();
+
+            _mapper.Map(updateListDto, list);
+            await _listRepository.UpdateAsync(list);
             return new SuccessResult("List successfully updated.");
         }
 
-        public async Task<IResult> DeleteListAsync(Guid id)
+        public async Task<IResult> DeleteListAsync(Guid listId)
         {
-            var listEntity = await _listRepository.GetByIdAsync(id);
-            if (listEntity == null)
+            var list = await _listRepository.GetByIdAsync(listId);
+            if (list == null)
             {
                 return new ErrorResult("List not found.");
             }
-            await _listRepository.DeleteAsync(listEntity);
-            await _listRepository.SaveChangesAsync();
+
+            var cardOrders = await _cardOrdersRepository.GetAllAsync(co => co.ListId == listId);
+            if (cardOrders.Any())
+            {
+                await _cardOrdersRepository.DeleteRangeAsync(cardOrders);
+            }
+            await _listRepository.DeleteAsync(list);
             return new SuccessResult("List successfully deleted.");
         }
 
-        public async Task<IEnumerable<ListDetailsDto>> GetAllListsAsync()
+        public async Task<IDataResult<ListDto>> GetListByIdAsync(Guid listId)
         {
-            var lists = await _listRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<ListDetailsDto>>(lists);
-        }
-
-        public async Task<IDataResult<ListDetailsDto>> GetListByIdAsync(Guid id)
-        {
-            var list = await _listRepository.GetByIdAsync(id);
+            var list = await _listRepository.GetByIdWithCardsAsync(listId);
             if (list == null)
             {
-                return new ErrorDataResult<ListDetailsDto>("List not found.");
+                return new ErrorDataResult<ListDto>("List not found.");
             }
-            var listDetailsDto = _mapper.Map<ListDetailsDto>(list);
-            return new SuccessDataResult<ListDetailsDto>(listDetailsDto, "List successfully retrieved.");
+
+            var listDto = _mapper.Map<ListDto>(list);
+            return new SuccessDataResult<ListDto>(listDto, "List details successfully listed.");
+        }
+
+        public async Task<IDataResult<List<ListDto>>> GetAllListsAsync()
+        {
+            var lists = await _listRepository.GetAllListsWithCardsAsync();
+            var listDtos = _mapper.Map<List<ListDto>>(lists);
+            return new SuccessDataResult<List<ListDto>>(listDtos, "Lists successfully listed.");
         }
     }
 }

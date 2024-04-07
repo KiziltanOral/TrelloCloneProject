@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace TrelloClone.Dtos.CardDtos
 {
-    public class CardUpdateDto
+    public class CardDto
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
-        public Guid NewListId { get; set; }
+        public Guid CardOrderId { get; set; }
     }
 }

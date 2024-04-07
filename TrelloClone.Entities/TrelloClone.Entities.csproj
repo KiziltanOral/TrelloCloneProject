@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Enums\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TrelloClone.Core\TrelloClone.Core.csproj" />
   </ItemGroup>
 

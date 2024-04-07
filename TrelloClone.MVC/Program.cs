@@ -18,6 +18,10 @@ builder.Services.AddDbContext<TrelloCloneDbContext>(options =>
     options.UseInMemoryDatabase("TrelloCloneDB"));
 builder.Services.AddScoped<IListService, ListService>();
 builder.Services.AddScoped<IListRepository, ListRepository>();
+builder.Services.AddScoped<ICardOrdersService, CardOrdersService>();
+builder.Services.AddScoped<ICardOrdersRepository, CardOrdersRepository>();
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<ICardRepository, CardRepository>();
 
 
 var app = builder.Build();

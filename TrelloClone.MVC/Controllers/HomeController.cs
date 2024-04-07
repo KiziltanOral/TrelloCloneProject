@@ -1,3 +1,4 @@
+using APILayer.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -33,8 +34,12 @@ namespace TrelloClone.MVC.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var lists = JsonConvert.DeserializeObject<IEnumerable<ListDetailsVM>>(content);
-                return View(lists);
+                var apiResponse = JsonConvert.DeserializeObject<APIResponse<List<ListDto>>>(content);
+                if (apiResponse != null && apiResponse.IsSuccess)
+                {
+                    var listVMs = _mapper.Map<List<ListDetailsVM>>(apiResponse.Data);
+                    return View(listVMs);
+                }
             }
 
             return View("Error");

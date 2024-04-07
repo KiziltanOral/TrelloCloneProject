@@ -19,6 +19,7 @@ namespace TrelloClone.Business.Extensions
 
             services.AddScoped<ICardService, CardService>();
             services.AddScoped<IListService, ListService>();
+            services.AddScoped<ICardOrdersService, CardOrdersService>();
 
             return services;
         }

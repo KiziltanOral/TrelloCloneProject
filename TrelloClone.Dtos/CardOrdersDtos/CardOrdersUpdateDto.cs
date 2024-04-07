@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TrelloClone.Dtos.CardDtos
+namespace TrelloClone.Dtos.CardOrdersDtos
 {
-    public class CardDetailsDto
+    public class CardOrdersUpdateDto
     {
         public Guid Id { get; set; }
-        public string Title { get; set; }
-        public Guid ListId { get; set; }
+        public int NewIndex { get; set; }
     }
 }

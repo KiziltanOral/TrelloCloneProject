@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TrelloClone.Core.Results.Concrete
+﻿namespace TrelloClone.Core.Results.Concrete
 {
     public class SuccessResult : Result
     {

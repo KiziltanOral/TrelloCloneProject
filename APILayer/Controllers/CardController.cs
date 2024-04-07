@@ -15,7 +15,6 @@ namespace APILayer.Controllers
         {
             _cardService = cardService;
         }
-
         [HttpPost]
         public async Task<IActionResult> CreateCard([FromBody] CardCreateDto cardCreateDto)
         {
@@ -24,7 +23,19 @@ namespace APILayer.Controllers
             {
                 return BadRequest(result.Message);
             }
-            return Ok(result);
+            
+            return CreatedAtAction(nameof(GetCardById), new { id = result.Data.Id }, result.Data);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetCardById(Guid id)
+        {
+            var result = await _cardService.GetCardByIdAsync(id);
+            if (!result.IsSuccess)
+            {
+                return NotFound(result.Message);
+            }
+            return Ok(result.Data);
         }
 
         [HttpPut("{id}")]
@@ -57,6 +68,28 @@ namespace APILayer.Controllers
         public async Task<IActionResult> GetAllCards()
         {
             var result = await _cardService.GetAllCardsAsync();
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
+            }
+            return Ok(result);
+        }
+
+        [HttpPost("{cardId}/MoveWithinList/{targetIndex}")]
+        public async Task<IActionResult> MoveCardWithinList(Guid cardId, int targetIndex)
+        {
+            var result = await _cardService.MoveCardWithinListAsync(cardId, targetIndex);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
+            }
+            return Ok(result);
+        }
+
+        [HttpPost("{cardId}/MoveToAnotherList/{targetListId}/{targetIndex}")]
+        public async Task<IActionResult> MoveCardToAnotherList(Guid cardId, Guid targetListId, int targetIndex)
+        {
+            var result = await _cardService.MoveCardToAnotherListAsync(cardId, targetListId, targetIndex);
             if (!result.IsSuccess)
             {
                 return BadRequest(result.Message);

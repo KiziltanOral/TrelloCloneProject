@@ -5,5 +5,7 @@ namespace TrelloClone.DataAccess.Interfaces.Repositories
 {
     public interface IListRepository : IAsyncRepository, IAsyncInsertableRepository<List>, IAsyncQueryableRepository<List>, IAsyncDeleteableRepository<List>, IAsyncFindableRepository<List>, IAsyncUpdateableRepository<List>
     {
+        Task<IEnumerable<List>> GetAllListsWithCardsAsync();
+        Task<List>? GetByIdWithCardsAsync(Guid listId);
     }
 }

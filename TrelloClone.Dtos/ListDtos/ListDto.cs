@@ -7,10 +7,10 @@ using TrelloClone.Dtos.CardDtos;
 
 namespace TrelloClone.Dtos.ListDtos
 {
-    public class ListDetailsDto
+    public class ListDto
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public IEnumerable<CardDetailsDto> Cards { get; set; }
+        public List<CardDto>? Cards { get; set; } = new List<CardDto>();
     }
 }

@@ -23,8 +23,20 @@ namespace APILayer.Controllers
             {
                 return BadRequest(result.Message);
             }
-            return Ok(result);
+            return CreatedAtAction(nameof(GetListById), new { id = result.Data.Id }, result.Data);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetListById(Guid id)
+        {
+            var result = await _listService.GetListByIdAsync(id);
+            if (!result.IsSuccess)
+            {
+                return NotFound(result.Message);
+            }
+            return Ok(result.Data);
+        }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateList(Guid id, [FromBody] ListUpdateDto listUpdateDto)
@@ -60,4 +72,3 @@ namespace APILayer.Controllers
         }
     }
 }
-

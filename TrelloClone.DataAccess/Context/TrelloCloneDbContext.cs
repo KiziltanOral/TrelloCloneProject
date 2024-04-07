@@ -11,15 +11,25 @@ namespace TrelloClone.DataAccess.Context
 
         public DbSet<List> Lists { get; set; }
         public DbSet<Card> Cards { get; set; }
+        public DbSet<CardOrders> CardOrders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<List>()
-                .HasMany(l => l.Cards)
-                .WithOne(c => c.List)
-                .HasForeignKey(c => c.ListId);
+                .HasMany(l => l.CardOrders)
+                .WithOne(co => co.List)
+                .HasForeignKey(co => co.ListId);
+
+            modelBuilder.Entity<Card>()
+                .HasOne(c => c.CardOrder)
+                .WithOne(co => co.Card)
+                .HasForeignKey<CardOrders>(co => co.CardId);
+
+            modelBuilder.Entity<CardOrders>()
+                .HasIndex(co => new { co.ListId, co.Index })
+                .IsUnique();
         }
     }
 }
